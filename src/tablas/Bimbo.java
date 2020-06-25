@@ -5,6 +5,7 @@
  */
 package tablas;
 import java.sql.*;
+import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
 import tablas.Producto;
 
@@ -33,12 +34,13 @@ public class Bimbo extends javax.swing.JFrame {
         
     private void refrescarTabla() {
          try {
+        
             
             DefaultTableModel modelo = new DefaultTableModel();
             tabla_productos.setModel(modelo);
             
             Connection conn = Producto.getConnection();
-            PreparedStatement pst = conn.prepareStatement("select ID, Nombre, Descripción, Precio, Cantidad from Productos");
+            PreparedStatement pst = conn.prepareStatement("select ID, Nombre, Descripcion, Precio, Cantidad from Productos");
             
             ResultSet rs = pst.executeQuery();
             
@@ -51,16 +53,26 @@ public class Bimbo extends javax.swing.JFrame {
             modelo.addColumn("Precio");
             modelo.addColumn("Cantidad");
             
+            
+            
             while(rs.next())
             {
                    Object[] filas = new Object[cantidadColumnas];
                    
-                   for (int i = 0; i < cantidadColumnas ; i++)
-                   {
-                       filas[i] = rs.getObject(i + 1);
-                   }
-                   
-                   modelo.addRow(filas);
+                    Producto p = new Producto();
+                    p.setID(Integer.parseInt(rs.getObject(1).toString()));
+                    p.setNombre(rs.getObject(2).toString());
+                    p.setDescripcion(rs.getObject(3).toString());
+                    p.setPrecio(Double.parseDouble(rs.getObject(4).toString()));
+                    p.setCantidad(Integer.parseInt(rs.getObject(5).toString()));
+                  
+                    filas[0] = p.getID();
+                    filas[1] = p.getNombre();
+                    filas[2] = p.getDescripcion();
+                    filas[3] = p.getPrecio();
+                    filas[4] = p.getCantidad();
+                       
+                    modelo.addRow(filas);
             }
             
             conn.close();
