@@ -6,6 +6,7 @@
 package tablas;
 import java.sql.*;
 import javax.swing.table.DefaultTableModel;
+import tablas.Producto;
 
 /**
  *
@@ -23,14 +24,14 @@ public class Bimbo extends javax.swing.JFrame {
         initComponents();
         
         this.setLocationRelativeTo(null);
-        tabla_productos.setEnabled(false);
+        
         
         try {
             
             DefaultTableModel modelo = new DefaultTableModel();
             tabla_productos.setModel(modelo);
             
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bd_bimbo", "root","");
+            Connection conn = Producto.getConnection();
             PreparedStatement pst = conn.prepareStatement("select ID, Nombre, Descripción, Precio, Cantidad from Productos");
             ResultSet rs = pst.executeQuery();
             
@@ -55,6 +56,7 @@ public class Bimbo extends javax.swing.JFrame {
                    modelo.addRow(filas);
             }
             
+            conn.close();
             
         } catch(SQLException ex) {
             
@@ -64,15 +66,16 @@ public class Bimbo extends javax.swing.JFrame {
         
         
     }
-    
+        
     private void refrescarTabla() {
          try {
             
             DefaultTableModel modelo = new DefaultTableModel();
             tabla_productos.setModel(modelo);
             
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bd_bimbo", "root","");
+            Connection conn = Producto.getConnection();
             PreparedStatement pst = conn.prepareStatement("select ID, Nombre, Descripción, Precio, Cantidad from Productos");
+            
             ResultSet rs = pst.executeQuery();
             
             ResultSetMetaData rsMd = rs.getMetaData();
@@ -96,7 +99,7 @@ public class Bimbo extends javax.swing.JFrame {
                    modelo.addRow(filas);
             }
             
-            
+            conn.close();
         } catch(SQLException ex) {
             
             System.err.println(ex.toString());
@@ -417,7 +420,7 @@ public class Bimbo extends javax.swing.JFrame {
         
         try {
             
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bd_bimbo", "root","");
+            Connection conn = Producto.getConnection();
             PreparedStatement pst = conn.prepareStatement("insert into Productos values(?,?,?,?,?)");
             
             pst.setString(1, textField_id.getText().trim());
@@ -436,6 +439,8 @@ public class Bimbo extends javax.swing.JFrame {
             
             refrescarTabla();
             
+            conn.close();
+            
         } catch (SQLException ex){
          System.err.println(ex.toString());   
         }
@@ -451,9 +456,14 @@ public class Bimbo extends javax.swing.JFrame {
     }//GEN-LAST:event_textField_idActionPerformed
 
     private void boton_comprarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boton_comprarActionPerformed
-        try {
+        
+        int quant_to_add = (int) spinner_compra.getValue();
+        
+        if(quant_to_add > 0)
+        {
+            try {
             
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bd_bimbo", "root","");
+            Connection conn = Producto.getConnection();
             PreparedStatement pst = conn.prepareStatement("update Productos set Cantidad = Cantidad + ? where ID=?");
             
             String spec_quant = spinner_compra.getValue().toString();
@@ -468,9 +478,16 @@ public class Bimbo extends javax.swing.JFrame {
             
             refrescarTabla();
             
-        } catch (SQLException ex) {
+            
+            conn.close();
+            } catch (SQLException ex) {
             System.err.println(ex.toString());
+            }
+        } else {
+            System.out.println("No se pueden sumar números negativos >:c");
         }
+        
+        
     }//GEN-LAST:event_boton_comprarActionPerformed
 
     private void textField_quantityActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textField_quantityActionPerformed
@@ -486,11 +503,11 @@ public class Bimbo extends javax.swing.JFrame {
         int quant_to_substract = (int) spinner_venta.getValue();
         int product_total = (int) tabla_productos.getValueAt(tabla_productos.getSelectedRow(), 4);
         
-        if( quant_to_substract <= product_total )
+        if( (quant_to_substract <= product_total)  && (quant_to_substract > 0) )
         {
             try {
             
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bd_bimbo", "root","");
+            Connection conn = Producto.getConnection();
             PreparedStatement pst = conn.prepareStatement("update Productos set Cantidad = Cantidad - ? where ID=?");
             
             String selected_pro = tabla_productos.getValueAt(tabla_productos.getSelectedRow(), 0).toString();
@@ -503,12 +520,14 @@ public class Bimbo extends javax.swing.JFrame {
             
             refrescarTabla();
             
+            conn.close();
+            
         } 
             catch (SQLException ex) {
             System.err.println(ex.toString());
             }
         } else {
-            System.out.println("No se pueden restar cantidades mayores al total unu");
+            System.out.println("No se pueden restar cantidades mayores al total ni números negativos");
         }
         
         
