@@ -26,43 +26,7 @@ public class Bimbo extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         
         
-        try {
-            
-            DefaultTableModel modelo = new DefaultTableModel();
-            tabla_productos.setModel(modelo);
-            
-            Connection conn = Producto.getConnection();
-            PreparedStatement pst = conn.prepareStatement("select ID, Nombre, Descripción, Precio, Cantidad from Productos");
-            ResultSet rs = pst.executeQuery();
-            
-            ResultSetMetaData rsMd = rs.getMetaData();
-            int cantidadColumnas = rsMd.getColumnCount();
-            
-            modelo.addColumn("Código");
-            modelo.addColumn("Nombre");
-            modelo.addColumn("Descripción");
-            modelo.addColumn("Precio");
-            modelo.addColumn("Cantidad");
-            
-            while(rs.next())
-            {
-                   Object[] filas = new Object[cantidadColumnas];
-                   
-                   for (int i = 0; i < cantidadColumnas ; i++)
-                   {
-                       filas[i] = rs.getObject(i + 1);
-                   }
-                   
-                   modelo.addRow(filas);
-            }
-            
-            conn.close();
-            
-        } catch(SQLException ex) {
-            
-            System.err.println(ex.toString());
-            
-        }
+        refrescarTabla();
         
         
     }
