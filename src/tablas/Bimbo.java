@@ -23,6 +23,7 @@ public class Bimbo extends javax.swing.JFrame {
         initComponents();
         
         this.setLocationRelativeTo(null);
+        tabla_productos.setEnabled(false);
         
         try {
             
@@ -154,7 +155,15 @@ public class Bimbo extends javax.swing.JFrame {
             new String [] {
                 "Title 1", "Title 2", "Title 3", "Title 4", "Title 5"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane1.setViewportView(tabla_productos);
 
         btn_crear.setText("Crear");
@@ -473,7 +482,36 @@ public class Bimbo extends javax.swing.JFrame {
     }//GEN-LAST:event_boton_refrescarActionPerformed
 
     private void boton_venderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boton_venderActionPerformed
-        // TODO add your handling code here:
+        
+        int quant_to_substract = (int) spinner_venta.getValue();
+        int product_total = (int) tabla_productos.getValueAt(tabla_productos.getSelectedRow(), 4);
+        
+        if( quant_to_substract <= product_total )
+        {
+            try {
+            
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bd_bimbo", "root","");
+            PreparedStatement pst = conn.prepareStatement("update Productos set Cantidad = Cantidad - ? where ID=?");
+            
+            String selected_pro = tabla_productos.getValueAt(tabla_productos.getSelectedRow(), 0).toString();
+            String spec_quant = Integer.toString(quant_to_substract);
+            
+            pst.setString(1, spec_quant);
+            pst.setString(2, selected_pro);
+            
+            pst.executeUpdate();
+            
+            refrescarTabla();
+            
+        } 
+            catch (SQLException ex) {
+            System.err.println(ex.toString());
+            }
+        } else {
+            System.out.println("No se pueden restar cantidades mayores al total unu");
+        }
+        
+        
     }//GEN-LAST:event_boton_venderActionPerformed
 
     private void textField_descriptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textField_descriptionActionPerformed
